@@ -13,7 +13,6 @@ def get_playerid() :
 
 username = get_playerid()
 
-
 def get_characterStatistics(username) :
     now = dt.datetime.now()
     nowDatetime = dt.datetime.strftime(now, "%Y-%m-%d %H:%M")
@@ -189,7 +188,7 @@ def get_characterStatistics(username) :
         group = '지하연합'
     elif most == '엘프리데' :
         group = '무소속'
-    print("** %s님이 만약 사이퍼즈 속 캐릭터라면, %s의 %s(이)였을 거예요. **" % (user, group, most))
+    print("** 만약 %s님이 사이퍼즈 속 캐릭터라면, %s의 %s(이)였을 거예요. **" % (user, group, most))
     print("평균레벨 : %d" % int(most_level/most2))
     print("평균 킬/데스/어시: %d/%d/%d" % (int(most_killCount/most2), int(most_deathCount/most2),int(most_assistCount/most2)))
     print("평균 공격량: %d" % int(most_attackPoint/most2))
@@ -224,11 +223,42 @@ def get_characterStatistics(username) :
         pass
 
     print("")
-    print("** 캐릭터 승률(4판 이상 플레이한 캐릭터만 표시) **")
-    filtered_dic = {k:v for k,v in character_list3.items() if v[0]+v[1] >= 4}
+    print("** 캐릭터 승률(3판 이상 플레이한 캐릭터만 표시) **")
+    filtered_dic = {k:v for k,v in character_list3.items() if v[0]+v[1] >= 3}
     sorted_filtered_dic = sorted(filtered_dic.items(), key=lambda x: x[1][2], reverse=True)
     for k,v in sorted_filtered_dic :
-        print(k,':',v) 
+        print(k,':',v)
+
+    date_list = {}
+
+    try:
+        for i in range (0, 100):
+            a = dict['matches']['rows'][i]['date'][:10]
+            if a not in date_list:
+                date_list[a] = [0, 0]
+                if dict['matches']['rows'][i]['playInfo']['result'] == 'win' :
+                    date_list[a][0] += 1
+                else :
+                    date_list[a][1] += 1
+            else :
+                if dict['matches']['rows'][i]['playInfo']['result'] == 'win' :
+                    date_list[a][0] += 1
+                else :
+                    date_list[a][1] += 1
+    except IndexError:
+        pass
+
+    try:
+        for i in range (0, 100):
+            date_list[list(date_list)[i]].append(date_list[list(date_list)[i]][0] / (date_list[list(date_list)[i]][0]+date_list[list(date_list)[i]][1]))
+    except IndexError:
+        pass
+
+    print("")
+    print("** 날짜별 승률 **")
+    sorted_date_dic = sorted(date_list.items(), key=lambda x: x)
+    for k,v in sorted_date_dic :
+        print(k,':',v)
     
 get_characterStatistics(username)
 
