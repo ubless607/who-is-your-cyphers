@@ -1,12 +1,13 @@
-#당신의 사이퍼즈 취향을 분석해 드립니다 by ubless607
+# 슬기로운 사퍼생활 : 당신의 사이퍼즈 취향을 분석해 드립니다 by ubless607
+# https://github.com/ubless607/who-is-your-cyphers
 
 import json
 import os
-import requests #pip install requests
+import requests
 import datetime as dt
 from collections import Counter
-import pandas as pd #pip install pandas
-import numpy as np #pip install numpy
+import pandas as pd
+import numpy as np
 
 def get_playerid() :
     try :
@@ -215,7 +216,7 @@ def get_characterStatistics(username) :
     elif most == '엘프리데' :
         group = '드로스트 가문'
     print("** 만약 %s님이 사이퍼즈 캐릭터였다면, %s의 %s(이)였을 거예요 **" % (user, group, most))
-    print("평균레벨 : %d" % int(most_level/most2))
+    print("평균 레벨 : %d" % int(most_level/most2))
     print("평균 킬/데스/어시: %d/%d/%d" % (int(most_killCount/most2), int(most_deathCount/most2),int(most_assistCount/most2)))
     print("평균 공격량: %d" % int(most_attackPoint/most2))
     print("평균 피해량: %d" % int(most_damagePoint/most2))
