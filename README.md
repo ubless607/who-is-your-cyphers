@@ -4,12 +4,13 @@
 
 
 ## Requirements
-이 프로젝트는 파이썬 3로 작성되었으며 <code>requests</code>, <code>pandas</code>, <code>numpy</code> 외부 모듈이 사용되었습니다. 파이썬이 설치돼 있지 않은 환경에서는 이 링크를 통해 웹에서 테스트해볼 수 있습니다: https://repl.it/@ubless607/seulgiroun-sapeosaenghwal
+이 프로젝트는 파이썬 3로 작성되었으며 <code>requests</code>, <code>pandas</code>, <code>numpy</code>, <code>pytz</code> 외부 모듈이 사용되었습니다. 파이썬이 설치돼 있지 않은 환경에서는 다음 링크를 통해 웹에서 테스트해볼 수 있습니다: https://repl.it/@ubless607/seulgiroun-sapeosaenghwal
 ```
 Module not found 에러가 발생할 경우: 
 pip install requests
 pip install pandas
 pip install numpy
+pip install pytz
 ```
 ## Usage
 ### 닉네임 입력
