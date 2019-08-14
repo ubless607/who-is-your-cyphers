@@ -8,6 +8,7 @@ import datetime as dt
 from collections import Counter
 import pandas as pd
 import numpy as np
+from pytz import timezone
 
 
 def get_playerid():
@@ -24,7 +25,7 @@ def get_playerid():
 
 
 def get_playerstatistics(username):
-    now = dt.datetime.now()
+    now = dt.datetime.now(timezone('Asia/Seoul'))
     nowDatetime = dt.datetime.strftime(now, "%Y-%m-%d %H:%M")
     past = now - dt.timedelta(days=30)
     pastDatetime = dt.datetime.strftime(past, "%Y-%m-%d %H:%M")
