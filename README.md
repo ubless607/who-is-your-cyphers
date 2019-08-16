@@ -4,7 +4,7 @@
 
 
 ## Requirements
-이 프로젝트는 파이썬 3로 작성되었으며 <code>requests</code>, <code>pandas</code>, <code>numpy</code>, <code>pytz</code> 외부 모듈이 사용되었습니다. 파이썬이 설치돼 있지 않은 환경에서는 다음 링크를 통해 웹에서 테스트해볼 수 있습니다: https://repl.it/@ubless607/seulgiroun-sapeosaenghwal
+이 프로젝트는 파이썬 3로 작성되었으며 <code>requests</code>, <code>pandas</code>, <code>numpy</code>, <code>pytz</code> 외부 모듈이 사용되었습니다. 파이썬이 설치돼 있지 않은 환경에서는 다음 링크를 통해 웹에서 테스트해볼 수 있습니다 (크롬 권장, 속도 느림): https://repl.it/@ubless607/seulgiroun-sapeosaenghwal
 ```
 Module not found 에러가 발생할 경우: 
 pip install requests
@@ -34,7 +34,7 @@ pip install pytz
 선호 포지션: 원거리딜러
 [원거리딜러: 46.0%, 근거리딜러: 38.0%, 탱커: 15.0%, 서포터: 1.0%]
 ```
-능력자의 플레이 스타일을 표시합니다. 몇 인 파티를 주로 하는지, 주요 게임 시간대가 몇 시인지, 선호 포지션이 무엇인지를 보여줍니다. 많은 양의 전적을 하나씩 분석하기 때문에 약간의 <code>freeze</code> 현상이 발생할 수 있습니다.
+능력자의 플레이 스타일을 표시합니다. 몇 인 파티를 주로 하는지, 주요 게임 시간대가 몇 시인지, 선호 포지션이 무엇인지를 보여줍니다.
 ### 선호 캐릭터
 ```
 ** 선호 캐릭터 TOP6 **
