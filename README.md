@@ -4,7 +4,7 @@
 
 
 ## Requirements
-이 프로젝트는 파이썬 3로 작성되었으며 <code>requests</code>, <code>pandas</code>, <code>numpy</code>, <code>pytz</code> 외부 모듈이 사용되었습니다. 파이썬이 설치돼 있지 않은 환경에서는 다음 링크를 통해 웹에서 테스트해볼 수 있습니다 (크롬 권장, 속도 느림): https://repl.it/@ubless607/seulgiroun-sapeosaenghwal
+이 프로젝트는 파이썬 3로 작성되었으며 <code>requests</code>, <code>pandas</code>, <code>numpy</code>, <code>pytz</code> 외부 모듈이 사용되었습니다. (* 8월 19일: <code>aiohttp</code>를 사용하여 여러 건의 <code>match json</code>을 불러오는 코드를 수정하고, <code>flask</code>를 활용한 웹 프로그래밍 진행을 계획하고 있습니다)
 ```
 Module not found 에러가 발생할 경우: 
 pip install requests
