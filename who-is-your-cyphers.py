@@ -1,44 +1,47 @@
+# coding=utf-8
 # 슬기로운 사퍼생활 : 당신의 사이퍼즈 취향을 분석해 드립니다 by ubless607
 # https://github.com/ubless607/who-is-your-cyphers
 
-import json
-import os
-import requests
 import datetime as dt
+import os
 from collections import Counter
-import pandas as pd
+
 import numpy as np
+import pandas as pd
+import requests
 from pytz import timezone
 
 
-def get_playerid():
+def get_playerstatistics(user):
     try:
-        global user
-        user = input("닉네임을 입력하세요: ")
         url = "https://api.neople.co.kr/cy/players?nickname=" + user + "&apikey=RvYjrC3nMgBprP2Z7KmPsfSGEikysfhW"
         dict = requests.get(url).json()
         playerid = (dict['rows'][0]['playerId'])
-        return playerid
     except IndexError:
         print("닉네임이 존재하지 않습니다.")
         os._exit(1)
+    except requests.exceptions.RequestException:
+        print("서버가 응답하지 않습니다.")
+        os._exit(1)
 
-
-def get_playerstatistics(username):
     now = dt.datetime.now(timezone('Asia/Seoul'))
-    nowDatetime = dt.datetime.strftime(now, "%Y-%m-%d %H:%M")
+    now_time = dt.datetime.strftime(now, "%Y-%m-%d %H:%M")
     past = now - dt.timedelta(days=30)
-    pastDatetime = dt.datetime.strftime(past, "%Y-%m-%d %H:%M")
+    past_time = dt.datetime.strftime(past, "%Y-%m-%d %H:%M")
 
     gametype = input("공식/일반: ")
-    if (gametype == "공식"):
-        url = "https://api.neople.co.kr/cy/players/" + username + "/matches?gameTypeId=rating&startDate=" + str(pastDatetime) + "&endDate=" + str(nowDatetime) + "&limit=100&apikey=RvYjrC3nMgBprP2Z7KmPsfSGEikysfhW"
-    else:
-        url = "https://api.neople.co.kr/cy/players/" + username + "/matches?gameTypeId=normal&startDate=" + str(pastDatetime) + "&endDate=" + str(nowDatetime) + "&limit=100&apikey=RvYjrC3nMgBprP2Z7KmPsfSGEikysfhW"
-    dict = requests.get(url).json()
+    try:
+        if gametype == "공식":
+            url = "https://api.neople.co.kr/cy/players/" + playerid + "/matches?gameTypeId=rating&startDate=" + str(past_time) + "&endDate=" + str(now_time) + "&limit=100&apikey=RvYjrC3nMgBprP2Z7KmPsfSGEikysfhW"
+        else:
+            url = "https://api.neople.co.kr/cy/players/" + playerid + "/matches?gameTypeId=normal&startDate=" + str(past_time) + "&endDate=" + str(now_time) + "&limit=100&apikey=RvYjrC3nMgBprP2Z7KmPsfSGEikysfhW"
+        dict = requests.get(url).json()
 
-    url = "https://api.neople.co.kr/cy/players/" + username + "?apikey=RvYjrC3nMgBprP2Z7KmPsfSGEikysfhW"
-    dict2 = requests.get(url).json()
+        url = "https://api.neople.co.kr/cy/players/" + playerid + "?apikey=RvYjrC3nMgBprP2Z7KmPsfSGEikysfhW"
+        dict2 = requests.get(url).json()
+    except requests.exceptions.RequestException:
+        print("서버가 응답하지 않습니다.")
+        os._exit(1)
 
     print("")
     print("** %s님의 프로필 **" % user)
@@ -54,8 +57,7 @@ def get_playerstatistics(username):
             ch_list.append(dict['matches']['rows'][i]['playInfo']['characterName'])
     except IndexError:
         pass
-
-    if ch_list == []:
+    if not ch_list:
         print("전적이 존재하지 않습니다.")
         os._exit(1)
 
@@ -87,8 +89,12 @@ def get_playerstatistics(username):
 
     position_count = []
     for matchid in matchid_list:
-        url = "https://api.neople.co.kr/cy/matches/" + matchid + "?apikey=RvYjrC3nMgBprP2Z7KmPsfSGEikysfhW"
-        temp_dict = requests.get(url).json()
+        try: 
+            url = "https://api.neople.co.kr/cy/matches/" + matchid + "?apikey=RvYjrC3nMgBprP2Z7KmPsfSGEikysfhW"
+            temp_dict = requests.get(url).json()
+        except requests.exceptions.RequestException:
+            print("서버가 응답하지 않습니다.")
+            os._exit(1)            
         try:
             for i in range(0, 10):
                 if user == temp_dict['players'][i]['nickname']:
@@ -103,40 +109,39 @@ def get_playerstatistics(username):
     if party_count[0][0] == 0:
         print("솔로 플레이어")
     else:
-        print(str(party_count[0][0])+"인 파티 유저")
-    print('게임 시간대:', time_count[0][0]+'시')
+        print(str(party_count[0][0]) + "인 파티 유저")
+    print('게임 시간대:', time_count[0][0] + '시')
     print('선호 포지션:', Counter(position_count).most_common(1)[0][0])
     position = []
     for k, v in position_count2:
-        count = " ".join([k+':', str(round(v/len(position_count)*100, 1))+'%'])
+        count = " ".join([k + ':', str(round(v / len(position_count) * 100, 1)) + '%'])
         position.append(count)
-    print ("[%s]" % (', '.join(position)))
+    print("[%s]" % (', '.join(position)))
 
     ch_list = Counter(ch_list)
     print()
     print("** 선호 캐릭터 TOP6 **")
     ch_list2 = ch_list.most_common(6)
     for k, v in ch_list2:
-        print(k+':', v)
+        print(k + ':', v)
     print("")
 
-    global most
     most = ch_list.most_common(1)[0][0]
-    most_Count = ch_list.most_common(1)[0][1]
+    most_count = ch_list.most_common(1)[0][1]
 
-    most_level, most_killCount, most_deathCount, most_assistCount, most_attackPoint, most_damagePoint, most_battlePoint, most_sightPoint, most_KDA = 0, 0, 0, 0, 0, 0, 0, 0, 0
+    most_level, most_killcount, most_deathcount, most_assistcount, most_attackpoint, most_damagepoint, most_battlepoint, most_sightpoint, most_kda = 0, 0, 0, 0, 0, 0, 0, 0, 0
 
     try:
         for i in range(0, 100):
             if dict['matches']['rows'][i]['playInfo']['characterName'] == most:
                 most_level += dict['matches']['rows'][i]['playInfo']['level']
-                most_killCount += dict['matches']['rows'][i]['playInfo']['killCount']
-                most_deathCount += dict['matches']['rows'][i]['playInfo']['deathCount']
-                most_assistCount += dict['matches']['rows'][i]['playInfo']['assistCount']
-                most_attackPoint += dict['matches']['rows'][i]['playInfo']['attackPoint']
-                most_damagePoint += dict['matches']['rows'][i]['playInfo']['damagePoint']
-                most_battlePoint += dict['matches']['rows'][i]['playInfo']['battlePoint']
-                most_sightPoint += dict['matches']['rows'][i]['playInfo']['sightPoint']
+                most_killcount += dict['matches']['rows'][i]['playInfo']['killCount']
+                most_deathcount += dict['matches']['rows'][i]['playInfo']['deathCount']
+                most_assistcount += dict['matches']['rows'][i]['playInfo']['assistCount']
+                most_attackpoint += dict['matches']['rows'][i]['playInfo']['attackPoint']
+                most_damagepoint += dict['matches']['rows'][i]['playInfo']['damagePoint']
+                most_battlepoint += dict['matches']['rows'][i]['playInfo']['battlePoint']
+                most_sightpoint += dict['matches']['rows'][i]['playInfo']['sightPoint']
     except IndexError:
         pass
 
@@ -163,14 +168,14 @@ def get_playerstatistics(username):
 
     print("** 모스트 캐릭터 **")
     print("만약 %s님이 사이퍼즈 캐릭터였다면, %s의 %s(이)였을 거예요." % (user, group, most))
-    print("평균 레벨: %d" % int(most_level/most_Count))
-    print("평균 킬/데스/어시: %d/%d/%d" % (int(most_killCount/most_Count), int(most_deathCount/most_Count), int(most_assistCount/most_Count)))
-    print("평균 공격량: %d" % int(most_attackPoint/most_Count))
-    print("평균 피해량: %d" % int(most_damagePoint/most_Count))
-    print("평균 전투참여: %d" % int(most_battlePoint/most_Count))
-    print("평균 시야점수: %d" % int(most_sightPoint/most_Count))
-    most_KDA = (most_killCount/most_Count + most_assistCount/most_Count) / (most_deathCount/most_Count)
-    print(str("평균 KDA: ") + str(round(most_KDA, 2)))
+    print("평균 레벨: %d" % int(most_level / most_count))
+    print("평균 킬/데스/어시: %d/%d/%d" % (int(most_killcount / most_count), int(most_deathcount / most_count), int(most_assistcount / most_count)))
+    print("평균 공격량: %d" % int(most_attackpoint / most_count))
+    print("평균 피해량: %d" % int(most_damagepoint / most_count))
+    print("평균 전투참여: %d" % int(most_battlepoint / most_count))
+    print("평균 시야점수: %d" % int(most_sightpoint / most_count))
+    most_kda = (most_killcount / most_count + most_assistcount / most_count) / (most_deathcount / most_count)
+    print(str("평균 KDA: ") + str(round(most_kda, 2)))
 
     ch_list3 = {}
     try:
@@ -191,17 +196,18 @@ def get_playerstatistics(username):
 
     try:
         for i in range(0, 100):
-            ch_list3[list(ch_list3)[i]].append(round(ch_list3[list(ch_list3)[i]][0] / (ch_list3[list(ch_list3)[i]][0]+ch_list3[list(ch_list3)[i]][1]), 2))
+            ch_list3[list(ch_list3)[i]].append(round(
+                ch_list3[list(ch_list3)[i]][0] / (ch_list3[list(ch_list3)[i]][0] + ch_list3[list(ch_list3)[i]][1]), 2))
     except IndexError:
         pass
 
     print("")
     print("** 캐릭터 승률 **")
     print("3판 이상 플레이한 캐릭터만 표시됩니다.")
-    filtered_dic = {k: v for k, v in ch_list3.items() if v[0]+v[1] >= 3}
+    filtered_dic = {k: v for k, v in ch_list3.items() if v[0] + v[1] >= 3}
     sorted_filtered_dic = sorted(filtered_dic.items(), key=lambda x: x[1][2], reverse=True)
     for k, v in sorted_filtered_dic:
-        print(k+':', str(int(v[2]*100))+'%', '('+str(v[0])+'승', str(v[1])+'패'+')')
+        print(k + ':', str(int(v[2] * 100)) + '%', '(' + str(v[0]) + '승', str(v[1]) + '패' + ')')
 
     date_list = {}
     try:
@@ -223,7 +229,7 @@ def get_playerstatistics(username):
 
     try:
         for i in range(0, 100):
-            date_list[list(date_list)[i]].append(round(date_list[list(date_list)[i]][0] / (date_list[list(date_list)[i]][0]+date_list[list(date_list)[i]][1]), 2))
+            date_list[list(date_list)[i]].append(round(date_list[list(date_list)[i]][0] / (date_list[list(date_list)[i]][0] + date_list[list(date_list)[i]][1]), 2))
     except IndexError:
         pass
 
@@ -231,7 +237,7 @@ def get_playerstatistics(username):
     print("** 날짜별 승률 **")
     sorted_date_dic = sorted(date_list.items(), key=lambda x: x)
     for k, v in sorted_date_dic:
-        print(k+':', str(int(v[2]*100))+'%', '('+str(v[0])+'승', str(v[1])+'패'+')')
+        print(k + ':', str(int(v[2] * 100)) + '%', '(' + str(v[0]) + '승', str(v[1]) + '패' + ')')
     if len(sorted_date_dic) == 1:
         print("승률을 분석하기에는 전적이 부족합니다.")
     else:
@@ -243,16 +249,16 @@ def get_playerstatistics(username):
         for i in range(len(sorted_date_dic)):
             data[1][i] = data[1][i][2]
 
-        X = data.iloc[:, 0]
-        Y = data.iloc[:, 1]
-        X_mean = np.mean(X)
-        Y_mean = np.mean(Y)
+        x = data.iloc[:, 0]
+        y = data.iloc[:, 1]
+        x_mean = np.mean(x)
+        y_mean = np.mean(y)
 
         num = 0
         den = 0
-        for i in range(len(X)):
-            num += (X[i] - X_mean)*(Y[i] - Y_mean)
-            den += (X[i] - X_mean)**2
+        for i in range(len(x)):
+            num += (x[i] - x_mean) * (y[i] - y_mean)
+            den += (x[i] - x_mean) ** 2
         m = num / den
 
         if m < 0:
@@ -265,5 +271,6 @@ def get_playerstatistics(username):
         else:
             print("승률이 상승하고 있습니다. 잘하고 있어요!")
 
-username = get_playerid()
-get_playerstatistics(username)
+
+user = input("닉네임을 입력하세요: ")
+get_playerstatistics(user)
