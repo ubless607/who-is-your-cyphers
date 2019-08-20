@@ -1,12 +1,9 @@
 ## About
-'당신의 사이퍼즈 취향을 분석해 드립니다'라는 목표로 시작된 '슬기로운 사퍼생활' 프로젝트는 네오플 OpenAPI에서 조회 가능한 (최대) 최근 100경기를 분석하여 입력한 능력자의 프로필, 선호 캐릭터 목록, 모스트 캐릭터, 승률이 높은 캐릭터 목록, 그리고 날짜별 승률과 그 분석 결과를 보여줍니다. 전적은 1시간마다 갱신됩니다.
-
-
+'당신의 사이퍼즈 취향을 분석해 드립니다'라는 목표로 시작된 이 프로젝트는 네오플 OpenAPI에서 조회 가능한 (최대) 최근 100경기를 분석하여 입력한 능력자의 프로필, 선호 캐릭터 목록, 모스트 캐릭터, 승률이 높은 캐릭터 목록, 그리고 날짜별 승률과 그 분석 결과를 보여줍니다. 전적은 1시간마다 갱신됩니다.
 
 ## Requirements
-이 프로젝트는 파이썬 3로 작성되었으며 <code>requests</code>, <code>pandas</code>, <code>numpy</code>, <code>pytz</code> 외부 모듈이 사용되었습니다. (* 8월 20일: <code>flask</code>를 활용한 웹 프로그래밍을 진행하고 있습니다)
+이 프로젝트는 파이썬 3.7 환경에서 작성되었으며 <code>requests</code>, <code>pandas</code>, <code>numpy</code>, <code>pytz</code> 외부 모듈이 사용되었습니다. <code>Module not found</code> 에러가 발생할 경우 아래의 명령어를 수행하시기 바랍니다.
 ```
-Module not found 에러가 발생할 경우: 
 pip install requests
 pip install pandas
 ```
