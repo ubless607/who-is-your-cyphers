@@ -1,20 +1,27 @@
 # coding=utf-8
+
 # 슬기로운 사퍼생활 : 당신의 사이퍼즈 취향을 분석해 드립니다 by ubless607
-# https://github.com/ubless607/who-is-your-cyphers
+# https://github.com/ubless607/flask-who-is-your-cyphers
 
 import datetime as dt
 import os
+import json
+import time as tm
 from collections import Counter
 
+import config
 import numpy as np
 import pandas as pd
+import aiohttp
+import asyncio
 import requests
 from pytz import timezone
 
 
 def get_playerstatistics(user):
     try:
-        url = "https://api.neople.co.kr/cy/players?nickname=" + user + "&apikey=RvYjrC3nMgBprP2Z7KmPsfSGEikysfhW"
+        user = user.upper()
+        url = "https://api.neople.co.kr/cy/players?nickname=" + user + "&apikey=" + config.key
         dict = requests.get(url).json()
         playerid = (dict['rows'][0]['playerId'])
     except IndexError:
@@ -26,18 +33,18 @@ def get_playerstatistics(user):
 
     now = dt.datetime.now(timezone('Asia/Seoul'))
     now_time = dt.datetime.strftime(now, "%Y-%m-%d %H:%M")
-    past = now - dt.timedelta(days=30)
+    past = now - dt.timedelta(days=90)
     past_time = dt.datetime.strftime(past, "%Y-%m-%d %H:%M")
 
     gametype = input("공식/일반: ")
     try:
         if gametype == "공식":
-            url = "https://api.neople.co.kr/cy/players/" + playerid + "/matches?gameTypeId=rating&startDate=" + str(past_time) + "&endDate=" + str(now_time) + "&limit=100&apikey=RvYjrC3nMgBprP2Z7KmPsfSGEikysfhW"
+            url = "https://api.neople.co.kr/cy/players/" + playerid + "/matches?gameTypeId=rating&startDate=" + str(past_time) + "&endDate=" + str(now_time) + "&limit=100&apikey=" + config.key
         else:
-            url = "https://api.neople.co.kr/cy/players/" + playerid + "/matches?gameTypeId=normal&startDate=" + str(past_time) + "&endDate=" + str(now_time) + "&limit=100&apikey=RvYjrC3nMgBprP2Z7KmPsfSGEikysfhW"
+            url = "https://api.neople.co.kr/cy/players/" + playerid + "/matches?gameTypeId=normal&startDate=" + str(past_time) + "&endDate=" + str(now_time) + "&limit=100&apikey=" + config.key
         dict = requests.get(url).json()
 
-        url = "https://api.neople.co.kr/cy/players/" + playerid + "?apikey=RvYjrC3nMgBprP2Z7KmPsfSGEikysfhW"
+        url = "https://api.neople.co.kr/cy/players/" + playerid + "?apikey=" + config.key
         dict2 = requests.get(url).json()
     except requests.exceptions.RequestException:
         print("서버가 응답하지 않습니다.")
@@ -81,27 +88,45 @@ def get_playerstatistics(user):
 
     matchid_list = []
     try:
-        for i in range(0, 100):
+        for i in range(0, 50):
             count = dict['matches']['rows'][i]['matchId']
             matchid_list.append(count)
     except IndexError:
         pass
+    matchid_list2 = []
+    try:
+        for i in range(50, 100):
+            count = dict['matches']['rows'][i]['matchId']
+            matchid_list2.append(count)
+    except IndexError:
+        pass
 
     position_count = []
-    for matchid in matchid_list:
-        try: 
-            url = "https://api.neople.co.kr/cy/matches/" + matchid + "?apikey=RvYjrC3nMgBprP2Z7KmPsfSGEikysfhW"
-            temp_dict = requests.get(url).json()
-        except requests.exceptions.RequestException:
-            print("서버가 응답하지 않습니다.")
-            os._exit(1)            
-        try:
-            for i in range(0, 10):
-                if user == temp_dict['players'][i]['nickname']:
-                    count = temp_dict['players'][i]['position']['name']
-                    position_count.append(count)
-        except IndexError:
-            pass
+    async def fetch(client, matchid):
+        async with client.get('https://api.neople.co.kr/cy/matches/' + matchid + '?apikey=' + config.key) as resp:
+            if resp.status == 400:
+                print("서버가 응답하지 않습니다.")
+                os._exit(1)
+            assert resp.status == 200
+            return await resp.text()
+    async def get_position(matchid):
+        async with aiohttp.ClientSession() as client:
+            temp_dict = await fetch(client, matchid)
+            temp_dict = json.loads(temp_dict)
+            try:
+                for i in range(0, 10):
+                    if user == temp_dict['players'][i]['nickname']:
+                        count = temp_dict['players'][i]['position']['name']
+                        position_count.append(count)
+            except IndexError:
+                pass
+
+    task1 = [get_position(matchid) for matchid in matchid_list]
+    asyncio.run(asyncio.wait(task1))
+    if not matchid_list2 == []:
+        tm.sleep(1)
+        task2 = [get_position(matchid) for matchid in matchid_list2]
+        asyncio.run(asyncio.wait(task2))
     position_count2 = Counter(position_count).most_common()
 
     print("")
@@ -119,11 +144,29 @@ def get_playerstatistics(user):
     print("[%s]" % (', '.join(position)))
 
     ch_list = Counter(ch_list)
+    ch_list2 = ch_list.most_common(7)
+
+    key_list = [key for key, _ in ch_list2]
+    value_list = [key for _, key in ch_list2]
+    most_list = []
+
+    for i in range(len(key_list)):
+        killcount, deathcount, assistcount = 0, 0, 0
+        try:
+            for j in range(0, 100):
+                if dict['matches']['rows'][j]['playInfo']['characterName'] == key_list[i]:
+                    killcount += dict['matches']['rows'][j]['playInfo']['killCount']
+                    deathcount += dict['matches']['rows'][j]['playInfo']['deathCount']
+                    assistcount += dict['matches']['rows'][j]['playInfo']['assistCount']
+        except IndexError:
+            pass
+        kda = str(round((killcount / value_list[i] + assistcount / value_list[i]) / (deathcount / value_list[i]), 2))
+        most_list.append(kda)
+
     print()
-    print("** 선호 캐릭터 TOP6 **")
-    ch_list2 = ch_list.most_common(6)
-    for k, v in ch_list2:
-        print(k + ':', v)
+    print("** 선호 캐릭터 TOP7 **")
+    for i in range(len(key_list)):
+        print(key_list[i] + ':', str(value_list[i])+'판', '(KDA: ' + most_list[i] + ')')
     print("")
 
     most = ch_list.most_common(1)[0][0]
@@ -235,7 +278,9 @@ def get_playerstatistics(user):
 
     print("")
     print("** 날짜별 승률 **")
+    print("최근 7일 전적을 불러옵니다.")
     sorted_date_dic = sorted(date_list.items(), key=lambda x: x)
+    sorted_date_dic = sorted_date_dic[-7:]
     for k, v in sorted_date_dic:
         print(k + ':', str(int(v[2] * 100)) + '%', '(' + str(v[0]) + '승', str(v[1]) + '패' + ')')
     if len(sorted_date_dic) == 1:
