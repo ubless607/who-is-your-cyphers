@@ -20,10 +20,10 @@ from pytz import timezone
 
 def get_playerstatistics(user):
     try:
-        user = user.upper()
         url = "https://api.neople.co.kr/cy/players?nickname=" + user + "&apikey=" + config.key
         dict = requests.get(url).json()
-        playerid = (dict['rows'][0]['playerId'])
+        playerid = dict['rows'][0]['playerId']
+        user = dict['rows'][0]['nickname']
     except IndexError:
         print("닉네임이 존재하지 않습니다.")
         os._exit(1)
